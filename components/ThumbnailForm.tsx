@@ -39,38 +39,10 @@ export function ThumbnailForm({ onSubmit, loading }: ThumbnailFormProps) {
 
       {/* Image Upload */}
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
-            <Image className="w-5 h-5 text-[#E50914]" />
-            Choose Image
-          </h3>
-          <select
-            value={formData.sampleImage}
-            onChange={(e) => {
-              const value = e.target.value;
-              if (value) {
-                fetch(value)
-                  .then(res => res.blob())
-                  .then(blob => {
-                    const file = new File([blob], 'sample.jpg', { type: 'image/jpeg' });
-                    setFormData(prev => ({ ...prev, imageFile: file, sampleImage: value }));
-                    setImagePreview(value);
-                  });
-              } else {
-                setFormData(prev => ({ ...prev, sampleImage: '' }));
-              }
-            }}
-            className="px-4 py-2 text-sm rounded-lg border bg-gray-50 dark:bg-[#282828] text-gray-900 dark:text-white border-gray-300 dark:border-[#383838] hover:border-[#E50914] focus:border-[#E50914] focus:ring-0 transition-all"
-          >
-            <option value="">Use sample Media</option>
-            <option value="/hiteshSir.jpg">Hitesh Sir</option>
-            <option value="/piyushSir.jpg">Piysh Sir</option>
-            <option value="/self.jpg">Self</option>
-            <option value="/banana.jpg">Fruit</option>
-            <option value="/cat.jpg">Animal</option>
-
-          </select>
-        </div>
+        <h3 className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
+          <Image className="w-5 h-5 text-[#E50914]" />
+          Choose Image
+        </h3>
         <div className="relative group">
           <label
             htmlFor="image-upload"
@@ -104,17 +76,17 @@ export function ThumbnailForm({ onSubmit, loading }: ThumbnailFormProps) {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Topic */}
+        {/* Description */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
             <Film className="w-5 h-5 text-[#E50914]" />
-            Video Topic
+            Video Description
           </h3>
           <input
             type="text"
             value={formData.topic}
             onChange={(e) => setFormData(prev => ({ ...prev, topic: e.target.value }))}
-            placeholder="e.g., Ultimate Gaming Setup Tour"
+            placeholder="e.g., Learn Python programming basics for beginners"
             className="w-full px-4 py-2.5 rounded-lg border bg-gray-50 dark:bg-[#282828] text-gray-900 dark:text-white border-gray-300 dark:border-[#383838] hover:border-[#E50914] focus:border-[#E50914] focus:ring-0 placeholder-gray-500 dark:placeholder-gray-400 outline-none transition-all"
           />
         </div>

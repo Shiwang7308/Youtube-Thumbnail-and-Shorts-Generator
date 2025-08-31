@@ -76,15 +76,41 @@ async function getCreativeDirection(topic: string, style: string): Promise<strin
     messages: [
       {
         role: "system",
-        content: "You are an expert Art Director specializing in YouTube thumbnails. Create a detailed visual direction for a programming course thumbnail."
+        content: `You are a professional thumbnail designer for top YouTube creators. Provide specific, actionable creative direction focusing on:
+
+        REALISM PRIORITIES:
+        1. Authentic lighting setups (3-point lighting, natural window light, etc.)
+        2. Realistic background environments that enhance credibility
+        3. Professional color grading techniques
+        4. Depth and dimension through layering
+        5. Typography that matches successful YouTube channels
+
+        TECHNICAL FOCUS:
+        - Specify exact lighting angles and intensities
+        - Detail background elements and textures
+        - Define color palettes with hex codes when relevant
+        - Suggest realistic shadow placements
+        - Recommend composition techniques used by top creators
+
+        FORBIDDEN: Any suggestions for facial modifications, beauty enhancements, or unrealistic effects.`
       },
       {
         role: "user",
-        content: `Create a thumbnail concept for "${topic}" with ${style}. Make it engaging and professional.`
+        content: `Create detailed creative direction for: "${topic}"
+        Style: ${style}
+        
+        Provide specific guidance on:
+        1. Lighting setup (direction, intensity, color temperature)
+        2. Background design (textures, elements, depth)
+        3. Color palette (primary, secondary, accent colors)
+        4. Typography treatment (size, positioning, effects)
+        5. Compositional elements that drive engagement
+        
+        Focus on photorealistic, professional results that look like they were shot in a real studio.`
       }
     ],
-    temperature: 0.7,
-    max_tokens: 300   
+    temperature: 0.7, // Balanced for speed and quality
+    max_tokens: 200   // Reduced for faster response   
   });
 
   return response.choices[0]?.message?.content || '';
@@ -99,13 +125,13 @@ async function generateWithGemini(
   style: string
 ): Promise<string[]> {
   try {
-    // Optimized configuration for faster and more consistent generation
+    // Optimized configuration balancing realism with speed
     const config = {
-      temperature: 0.8,
-      topP: 0.8, 
-      topK: 15, 
-      maxOutputTokens: 2048, 
-      candidateCount: 1, // Generate only one candidate for faster response
+      temperature: 0.6, // Balanced for quality and speed
+      topP: 0.8, // Optimal balance for diverse but focused outputs
+      topK: 10, // Good balance between quality and speed
+      maxOutputTokens: 2048,
+      candidateCount: 1,
       responseModalities: ['IMAGE', 'TEXT']
     };
 
@@ -141,32 +167,35 @@ async function generateWithGemini(
            - Subject must be fully visible and properly scaled to fit 9:16
            - Background should extend full height without stretching`;    // Enhanced prompt structure based on testing
     const fullPrompt = `
-      --- ART DIRECTION BRIEF ---
-      **Objective:** Create a viral, professional, and click-worthy YouTube thumbnail.
+      PROFESSIONAL THUMBNAIL GENERATION:
 
-      **CRITICAL FACIAL PRESERVATION REQUIREMENTS:**
-      - ABSOLUTELY DO NOT modify, enhance, beautify, or alter the person's face in ANY way
-      - Keep 100% original facial features, expressions, skin texture, and appearance
-      - The face must remain exactly as shown in the input image
-      - Only enhance lighting and background elements around the person
+      **FACIAL PRESERVATION (CRITICAL):**
+      - Use person's face EXACTLY as provided - zero modifications
+      - Preserve natural skin, expressions, and all facial features
+      - Only enhance lighting and background, never the face
 
-      **Core Request:**
-      - **Style Direction:** ${style}
-      - **Image Integration:** Use the user-provided photo as the central subject with ZERO facial modifications
-      - **Text Content:** Overlay the exact text: "${topic}"
+      **SPECIFICATIONS:**
+      - Format: ${aspectRatio === "16:9" ? "1920x1080 YouTube Video" : "1080x1920 YouTube Shorts"}
+      - Text: "${topic}" (exact wording, high readability)
+      - Style: ${style}
+      - Quality: Professional, broadcast-ready
 
-      **Technical & Design Specifications:**
-      - **Composition:** ${aspectRatioInstructions}. Use the rule of thirds for a balanced and professional layout.
-      - **Lighting:** Employ cinematic, dramatic lighting around the subject. DO NOT modify the face itself.
-      - **Color Palette:** Use a vibrant, high-contrast color palette that is harmonious with the subject's photo.
-      - **Text Readability:** This is CRITICAL. The text must be perfectly legible on all screen sizes, from mobile phones to TVs. Apply a semi-transparent dark gradient behind the text for maximum contrast. Ensure a minimum 10% safety margin for the text from all edges.
-      - **Output Quality:** Render in 8K resolution, photorealistic, sharp focus, high detail, professional studio quality.
+      **COMPOSITION:**
+      ${aspectRatioInstructions}
 
-      **--- NEGATIVE PROMPTS (AVOID AT ALL COSTS) ---**
-      - DO NOT include: Face modifications, facial enhancements, beauty filters, face smoothing, face alterations
-      - DO NOT include: Blurry or low-resolution elements, text errors, bad typography, watermarks, signatures, or any artifacts.
+      **ENHANCEMENT FOCUS:**
+      - Professional lighting setup around subject
+      - Engaging background that complements subject
+      - Bold, readable typography with proper contrast
+      - YouTube-optimized colors for engagement
 
+      **CREATIVE DIRECTION:**
       ${creativeDirection}
+
+      **FORBIDDEN:**
+      - Face modifications, beauty filters, or enhancements
+      - Poor quality, blurry, or pixelated elements
+      - Illegible text or cut-off elements
     `;
     
     const images: string[] = [];
@@ -246,20 +275,42 @@ async function getEnhancedPrompts(topic: string, style: string, placement: strin
         model: "gpt-4o-mini",
         messages: [{
           role: "system",
-          content: `You are an expert thumbnail designer. Create a single, high-impact YouTube thumbnail prompt.
-          CRITICAL: Keep the exact topic text "${topic}" and never modify it.
-          Focus on professional composition and maximum engagement.`
+          content: `You are a YouTube thumbnail specialist creating photorealistic thumbnail prompts. Focus on:
+          
+          REALISM PRIORITIES:
+          - Professional studio lighting setups with specific technical details
+          - Authentic background environments with realistic textures and materials
+          - Commercial-grade color grading techniques
+          - Natural depth of field and shadow placement
+          - Typography treatments matching successful YouTube channels
+          
+          TECHNICAL SPECIFICATIONS:
+          - Lighting: Specify angles (key light, fill light, rim light positions)
+          - Backgrounds: Detail materials (brushed metal, wood grain, tech setups, etc.)
+          - Colors: Professional color temperature and grading techniques
+          - Shadows: Natural shadow direction and intensity
+          - Perspective: Professional camera angles and composition
+          
+          STRICT RULE: Never suggest facial modifications or artificial enhancements.
+          The person must appear completely natural and authentic.`
         }, {
           role: "user",
-          content: `Create a single thumbnail concept for:
-            Topic: ${topic}
+          content: `Create a photorealistic thumbnail concept for:
+            Description: ${topic}
             Style: ${style}
             Person placement: ${placement}
             
-            Include specific lighting, composition, and design details for a professional result.`
+            Provide detailed technical specifications:
+            1. Studio lighting setup (key light at 45°, fill light intensity, rim lighting)
+            2. Background environment (specific materials, textures, depth layers)
+            3. Professional color grading (temperature, saturation, contrast levels)
+            4. Typography design (font weight, drop shadows, positioning)
+            5. Composition techniques for maximum viewer engagement
+            
+            Result should look like a professional photography studio shoot.`
         }],
-        temperature: 0.7,
-        max_tokens: 400
+        temperature: 0.8, // Higher for faster, more creative responses
+        max_tokens: 300   // Reduced for speed
       });
       
       return [response.choices[0].message.content || ''];
@@ -270,33 +321,50 @@ async function getEnhancedPrompts(topic: string, style: string, placement: strin
       model: "gpt-4o-mini",
       messages: [{
         role: "system",
-        content: `You are an expert thumbnail designer. Generate EXACTLY ${variants} distinct thumbnail concepts.
-        CRITICAL REQUIREMENTS:
-        - Keep the exact topic text "${topic}" - never modify it
-        - Each concept must be visually different
-        - Maintain natural facial features - DO NOT alter the person's face
-        - Focus on lighting, composition, and background variations
+        content: `You are a YouTube thumbnail expert creating ${variants} photorealistic design concepts.
         
-        Return each concept separated by "|||VARIANT|||"`
+        REALISM STANDARDS:
+        - Each variant must look like professional studio photography
+        - Preserve facial authenticity with zero artificial modifications
+        - Create variety through technical lighting and environmental changes
+        - Maintain broadcast-quality visual standards
+        
+        TECHNICAL VARIATION APPROACHES:
+        1. Lighting Setups: Different professional lighting configurations
+           - Variant 1: Dramatic key lighting with strong shadows
+           - Variant 2: Soft box lighting with even illumination
+           
+        2. Background Environments: Distinct realistic settings
+           - Modern studio setup vs. natural environment vs. tech workspace
+           
+        3. Color Grading: Professional post-production techniques
+           - Warm vs. cool color temperatures
+           - High contrast vs. natural saturation
+           
+        4. Composition Styles: Different professional framing approaches
+           - Close-up portrait vs. wider environmental shot
+           
+        FORBIDDEN: Facial modifications, beauty filters, unrealistic enhancements.`
       }, {
         role: "user",
-        content: `Create ${variants} distinct thumbnail concepts:
-          Topic: ${topic}
+        content: `Create ${variants} photorealistic thumbnail concepts for:
+          Description: ${topic}
           Style: ${style}
           Person placement: ${placement}
           
-          Each variant should have:
-          - Different lighting approach (dramatic, soft, cinematic, etc.)
-          - Different background treatment
-          - Different text positioning
-          - Unique visual elements
+          Each variant needs:
+          - Unique background approach
+          - Different lighting environment 
+          - Varied text positioning
+          - Distinct color scheme
+          - Natural, unmodified person appearance
           
           Format: concept1 |||VARIANT||| concept2 ${variants > 2 ? '|||VARIANT||| concept3' : ''}`
       }],
-      temperature: 0.9,
-      max_tokens: 1200,
-      presence_penalty: 0.8,
-      frequency_penalty: 0.6
+      temperature: 0.9, // High creativity for diverse variants
+      max_tokens: 800,  // Reduced for faster processing
+      presence_penalty: 0.6, // Reduced for speed
+      frequency_penalty: 0.4
     });
     
     const content = response.choices[0].message.content || '';
@@ -307,7 +375,7 @@ async function getEnhancedPrompts(topic: string, style: string, placement: strin
       // If we don't have enough, duplicate and modify the last one
       while (prompts.length < variants) {
         const lastPrompt = prompts[prompts.length - 1];
-        prompts.push(`${lastPrompt} (Alternative lighting and composition)`);
+        prompts.push(`${lastPrompt} (Alternative background and lighting approach)`);
       }
     }
     

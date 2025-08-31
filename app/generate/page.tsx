@@ -173,7 +173,7 @@ export default function HomePage() {
               </span>
             </h2>
             <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
-              Upload your photo, describe your video, and let AI create professional thumbnails optimized for both YouTube and Shorts.
+              Upload your photo, describe your video content, and let AI create professional thumbnails optimized for both YouTube and Shorts.
             </p>
           </div>
 
