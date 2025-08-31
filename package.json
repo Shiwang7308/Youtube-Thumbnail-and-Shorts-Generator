@@ -1,27 +1,58 @@
 {
-  "name": "thumb-ai-l",
+  "name": "thumbcraftai",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "dev": "next dev",
+    "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "next lint",
+    "test:gemini": "ts-node test-gemini.ts",
+    "test:gemini-advanced": "ts-node test-gemini-advanced.ts"
   },
   "dependencies": {
+    "@google/genai": "^1.16.0",
+    "@google/generative-ai": "^0.24.1",
+    "@types/archiver": "^6.0.3",
+    "@types/form-data": "^2.2.1",
+    "@types/node-fetch": "^2.6.13",
+    "@types/react-slick": "^0.23.13",
+    "@types/sharp": "^0.31.1",
+    "archiver": "^7.0.1",
+    "form-data": "^4.0.4",
+    "formidable": "^3.5.4",
+    "framer-motion": "^12.23.12",
+    "jszip": "^3.10.1",
+    "lucide-react": "^0.542.0",
+    "mime": "^4.0.7",
+    "next": "15.5.2",
+    "next-themes": "^0.4.6",
+    "node-fetch": "^3.3.2",
+    "openai": "^5.16.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "next": "15.5.2"
+    "react-hot-toast": "^2.6.0",
+    "react-slick": "^0.31.0",
+    "sharp": "^0.34.3",
+    "slick-carousel": "^1.8.1"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@eslint/eslintrc": "^3",
+    "@types/dotenv": "^6.1.1",
+    "@types/formidable": "^3.4.5",
+    "@types/jszip": "^3.4.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
-    "eslint": "^9",
+    "@typescript-eslint/eslint-plugin": "^7.1.0",
+    "@typescript-eslint/parser": "^7.1.0",
+    "autoprefixer": "^10.4.21",
+    "dotenv": "^17.2.1",
+    "eslint": "^8.56.0",
     "eslint-config-next": "15.5.2",
-    "@eslint/eslintrc": "^3"
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5"
   }
 }
