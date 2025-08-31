@@ -116,14 +116,24 @@ async function generateWithGemini(
     // Add aspect ratio specific instructions
       const aspectRatioInstructions = aspectRatio === "16:9"
         ? `Create a professional YouTube video thumbnail (1920x1080, 16:9 aspect ratio).
-           CRITICAL COMPOSITION RULES:
+           CRITICAL FACIAL PRESERVATION:
+           - DO NOT modify, enhance, or alter the person's facial features in ANY way
+           - Keep the exact face, expression, and natural appearance from the input image
+           - Only adjust lighting and composition around the face
+           - Maintain 100% original facial structure and features
+           COMPOSITION RULES:
            - ALL content MUST be fully contained within the frame
            - Maintain 10% padding from ALL edges
            - NO elements should be cut off or extend beyond the frame
            - Use rule of thirds for main subject placement
            - Text should be large and centered for maximum impact`
         : `Create a vertical YouTube Shorts thumbnail (1080x1920, 9:16 aspect ratio).
-           CRITICAL COMPOSITION RULES:
+           CRITICAL FACIAL PRESERVATION:
+           - DO NOT modify, enhance, or alter the person's facial features in ANY way
+           - Keep the exact face, expression, and natural appearance from the input image
+           - Only adjust lighting and composition around the face
+           - Maintain 100% original facial structure and features
+           COMPOSITION RULES:
            - ALL content MUST be vertically centered
            - Maintain 15% padding from top AND bottom edges
            - NO elements should extend beyond the vertical frame
@@ -134,20 +144,27 @@ async function generateWithGemini(
       --- ART DIRECTION BRIEF ---
       **Objective:** Create a viral, professional, and click-worthy YouTube thumbnail.
 
+      **CRITICAL FACIAL PRESERVATION REQUIREMENTS:**
+      - ABSOLUTELY DO NOT modify, enhance, beautify, or alter the person's face in ANY way
+      - Keep 100% original facial features, expressions, skin texture, and appearance
+      - The face must remain exactly as shown in the input image
+      - Only enhance lighting and background elements around the person
+
       **Core Request:**
       - **Style Direction:** ${style}
-      - **Image Integration:** Seamlessly integrate the user-provided photo as the central subject. Maintain natural skin tones and professional lighting.
+      - **Image Integration:** Use the user-provided photo as the central subject with ZERO facial modifications
       - **Text Content:** Overlay the exact text: "${topic}"
 
       **Technical & Design Specifications:**
       - **Composition:** ${aspectRatioInstructions}. Use the rule of thirds for a balanced and professional layout.
-      - **Lighting:** Employ cinematic, dramatic lighting. Use subtle rim lighting to separate the subject from the background. Apply a soft vignette effect to draw focus to the center.
+      - **Lighting:** Employ cinematic, dramatic lighting around the subject. DO NOT modify the face itself.
       - **Color Palette:** Use a vibrant, high-contrast color palette that is harmonious with the subject's photo.
       - **Text Readability:** This is CRITICAL. The text must be perfectly legible on all screen sizes, from mobile phones to TVs. Apply a semi-transparent dark gradient behind the text for maximum contrast. Ensure a minimum 10% safety margin for the text from all edges.
       - **Output Quality:** Render in 8K resolution, photorealistic, sharp focus, high detail, professional studio quality.
 
       **--- NEGATIVE PROMPTS (AVOID AT ALL COSTS) ---**
-      - DO NOT include: Blurry or low-resolution elements, text errors, bad typography, ugly or deformed subjects, extra limbs, poorly drawn hands, disfigured faces, bad anatomy, watermarks, signatures, or any artifacts.
+      - DO NOT include: Face modifications, facial enhancements, beauty filters, face smoothing, face alterations
+      - DO NOT include: Blurry or low-resolution elements, text errors, bad typography, watermarks, signatures, or any artifacts.
 
       ${creativeDirection}
     `;
@@ -223,84 +240,79 @@ async function generateWithGemini(
 
 async function getEnhancedPrompts(topic: string, style: string, placement: string, variants: number = 1): Promise<string[]> {
   try {
+    // If only 1 variant requested, return a single enhanced prompt
+    if (variants === 1) {
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{
+          role: "system",
+          content: `You are an expert thumbnail designer. Create a single, high-impact YouTube thumbnail prompt.
+          CRITICAL: Keep the exact topic text "${topic}" and never modify it.
+          Focus on professional composition and maximum engagement.`
+        }, {
+          role: "user",
+          content: `Create a single thumbnail concept for:
+            Topic: ${topic}
+            Style: ${style}
+            Person placement: ${placement}
+            
+            Include specific lighting, composition, and design details for a professional result.`
+        }],
+        temperature: 0.7,
+        max_tokens: 400
+      });
+      
+      return [response.choices[0].message.content || ''];
+    }
+
+    // For multiple variants, generate distinct concepts
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [{
         role: "system",
-        content: `Generate high-impact YouTube thumbnail prompts. Focus on these key aspects:
-1. Keep topic text EXACTLY as provided
-2. Clear visual hierarchy (text and subject)
-3. Professional composition
-4. Engaging visuals
-5. Readability at all sizes
-
-Key Principles for Industry-Leading Thumbnails:
-
-1. STRICT TOPIC ADHERENCE:
-   - CRITICAL: Use the EXACT topic/title provided by the user without modification
-   - Never rephrase or alter the user's topic - maintain authenticity
-   - Position the topic text prominently without changing its wording
-
-2. HUMAN-CENTRIC DESIGN:
-   - The user's image MUST be the hero element
-   - Maintain natural skin tones and facial features
-   - Use professional lighting to enhance but not alter appearance
-   - Place subject according to user's placement preference
-
-3. PROFESSIONAL COMPOSITION:
-   - Create clear text zones for perfect legibility
-   - Use industry-standard aspect ratios (16:9 for videos, 9:16 for shorts)
-   - Implement the "3-second rule" - message must be clear instantly
-   - Maintain negative space around key elements
-
-4. ADVANCED VISUAL HIERARCHY:
-   - Topic text: Most prominent (using exact user wording)
-   - Subject (user's image): Clear focal point
-   - Supporting elements: Subtle and non-interfering
-
-5. ENGAGEMENT OPTIMIZATION:
-   - Implement proven YouTube thumbnail patterns
-   - Use strategic color psychology based on content type
-   - Create depth through smart layering
-   - Ensure mobile-first visibility
-
-6. TECHNICAL EXCELLENCE:
-   - Guarantee text readability at all sizes
-   - Maintain image quality and sharpness
-   - Use proper contrast ratios for accessibility
-   - Optimize for multiple platform displays
-
-CRITICAL INSTRUCTIONS:
-- Generate EXACTLY ${variants} prompt(s)
-- Never modify or rephrase the user's topic text
-- Maintain professional broadcast quality
-- Focus on real-world effectiveness
-
-This is for professional YouTubers who need industry-leading quality. Treat each thumbnail as if it will be seen by millions.`
+        content: `You are an expert thumbnail designer. Generate EXACTLY ${variants} distinct thumbnail concepts.
+        CRITICAL REQUIREMENTS:
+        - Keep the exact topic text "${topic}" - never modify it
+        - Each concept must be visually different
+        - Maintain natural facial features - DO NOT alter the person's face
+        - Focus on lighting, composition, and background variations
+        
+        Return each concept separated by "|||VARIANT|||"`
       }, {
         role: "user",
-        content: `Create engaging YouTube thumbnail prompts that will produce distinctly different results.
+        content: `Create ${variants} distinct thumbnail concepts:
           Topic: ${topic}
           Style: ${style}
           Person placement: ${placement}
-          Number of variations: ${variants || 1}
           
-          Requirements:
-          - Make each prompt create a distinctly different visual approach
-          - Emphasize prominent and natural integration of user's image
-          - Include specific lighting and composition details
-          - Consider text placement and hierarchy
-          - Design for maximum engagement
+          Each variant should have:
+          - Different lighting approach (dramatic, soft, cinematic, etc.)
+          - Different background treatment
+          - Different text positioning
+          - Unique visual elements
           
-          Format: Return exactly ${variants || 1} prompts, each separated by [SPLIT]`
+          Format: concept1 |||VARIANT||| concept2 ${variants > 2 ? '|||VARIANT||| concept3' : ''}`
       }],
-      temperature: 0.8,
-      max_tokens: 800,
-      presence_penalty: 0.6,
-      frequency_penalty: 0.4
+      temperature: 0.9,
+      max_tokens: 1200,
+      presence_penalty: 0.8,
+      frequency_penalty: 0.6
     });
+    
     const content = response.choices[0].message.content || '';
-    return content.split('[SPLIT]').map(p => p.trim()).slice(0, variants);
+    const prompts = content.split('|||VARIANT|||').map(p => p.trim()).filter(p => p.length > 0);
+    
+    // Ensure we have exactly the requested number of variants
+    if (prompts.length < variants) {
+      // If we don't have enough, duplicate and modify the last one
+      while (prompts.length < variants) {
+        const lastPrompt = prompts[prompts.length - 1];
+        prompts.push(`${lastPrompt} (Alternative lighting and composition)`);
+      }
+    }
+    
+    console.log(`Generated ${prompts.length} prompts for ${variants} variants`);
+    return prompts.slice(0, variants);
   } catch (error: any) {
     console.error('OpenAI error:', error);
     throw new Error('Failed to enhance prompt with OpenAI: ' + error.message);

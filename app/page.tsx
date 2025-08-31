@@ -30,8 +30,11 @@ export default function LandingPage() {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h3 className="text-2xl font-bold text-red-600 dark:text-red-500" style={{ fontFamily: 'Netflix Sans, Bebas Neue, sans-serif' }}>
-            ThumbCraft AI
+          <h3 className="text-3xl font-black tracking-tight">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E50914] to-[#FF4D4D] animate-gradient">
+              ThumbCraft
+            </span>
+            <span className="text-[#E50914]">AI</span>
           </h3>
           <div className="flex items-center gap-4">
             <button
@@ -72,9 +75,10 @@ export default function LandingPage() {
             >
               <div className="space-y-4">
                 <h2 className="text-4xl md:text-6xl font-bold" style={{ fontFamily: 'Netflix Sans, Bebas Neue, sans-serif' }}>
-                  <span className="text-red-600" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>
-                    ThumbCraft AI
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E50914] to-[#FF4D4D] animate-gradient" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>
+                    ThumbCraft
                   </span>
+                  <span className="text-[#E50914]">AI</span>
                 </h2>
                 <h1 className="text-4xl md:text-6xl font-bold leading-tight">
                   <span className="bg-gradient-to-r from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
@@ -385,8 +389,11 @@ export default function LandingPage() {
       <footer className="bg-white dark:bg-black border-t border-gray-200 dark:border-gray-800">
         <div className="container mx-auto px-4 py-12">
           <div className="flex flex-col items-center justify-center space-y-6">
-            <h3 className="text-2xl font-bold text-red-600 dark:text-red-500" style={{ fontFamily: 'Netflix Sans, Bebas Neue, sans-serif' }}>
-              ThumbCraft AI
+            <h3 className="text-3xl font-black tracking-tight">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E50914] to-[#FF4D4D] animate-gradient">
+                ThumbCraft
+              </span>
+              <span className="text-[#E50914]">AI</span>
             </h3>
             <p className="text-gray-600 dark:text-gray-400 text-center">
               Crafting the future of YouTube thumbnails with AI

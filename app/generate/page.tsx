@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { Sun, Moon, Info } from 'lucide-react';
+import { Sun, Moon, Info, Github, Linkedin, Twitter } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ThumbnailForm } from '@/components/ThumbnailForm';
 import { ThumbnailPreview } from '@/components/ThumbnailPreview';
@@ -42,6 +43,7 @@ export default function HomePage() {
       data.append('topic', formData.topic);
       data.append('style', formData.style);
       data.append('placement', formData.placement);
+      data.append('variants', formData.variants.toString());
       
       if (formData.tone) {
         data.append('tone', formData.tone);
@@ -125,12 +127,14 @@ export default function HomePage() {
       <header className="sticky top-0 z-50 bg-white/90 dark:bg-[#0F0F0F]/90 backdrop-blur-md border-b border-gray-200 dark:border-[#272727] transition-all duration-200">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-black tracking-tight">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E50914] to-[#FF4D4D] animate-gradient">
-                ThumbCraft
-              </span>
-              <span className="text-[#E50914]">AI</span>
-            </h1>
+            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+              <h1 className="text-3xl font-black tracking-tight">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E50914] to-[#FF4D4D] animate-gradient">
+                  ThumbCraft
+                </span>
+                <span className="text-[#E50914]">AI</span>
+              </h1>
+            </Link>
             <button
               onClick={() => toast('AI-powered thumbnail generator for YouTube creators')}
               className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-[#E50914] dark:hover:text-[#E50914] transition-colors"
@@ -190,6 +194,51 @@ export default function HomePage() {
           )}
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="bg-white dark:bg-black border-t border-gray-200 dark:border-gray-800">
+        <div className="container mx-auto px-4 py-12">
+          <div className="flex flex-col items-center justify-center space-y-6">
+            <Link href="/" className="hover:opacity-80 transition-opacity">
+              <h3 className="text-2xl font-bold text-red-600 dark:text-red-500" style={{ fontFamily: 'Netflix Sans, Bebas Neue, sans-serif' }}>
+                ThumbCraft AI
+              </h3>
+            </Link>
+            <p className="text-gray-600 dark:text-gray-400 text-center">
+              Crafting the future of YouTube thumbnails with AI
+            </p>
+            <div className="flex items-center space-x-6">
+              <a
+                href="https://github.com/Shiwang7308"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-500 transition-colors"
+              >
+                <Github className="w-6 h-6" />
+              </a>
+              <a
+                href="https://www.linkedin.com/in/gupta-shiwang-7308"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-500 transition-colors"
+              >
+                <Linkedin className="w-6 h-6" />
+              </a>
+              <a
+                href="https://x.com/shiwang7308"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-500 transition-colors"
+              >
+                <Twitter className="w-6 h-6" />
+              </a>
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              Created with ❤️ by Shiwang
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
