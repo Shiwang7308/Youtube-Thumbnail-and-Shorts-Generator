@@ -38,22 +38,25 @@ export default function LandingPage() {
           </h3>
           <div className="flex items-center gap-4">
             <button
-              onClick={() => router.push('/generate')}
+              onClick={() => router.push('/login')}
               className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
             >
-              Create Thumbnail
+              Login to Create
             </button>
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
               aria-label="Toggle theme"
+              suppressHydrationWarning
             >
-              {mounted && (
+              {mounted ? (
                 theme === 'dark' ? (
                   <Sun className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 ) : (
                   <Moon className="w-5 h-5 text-gray-600" />
                 )
+              ) : (
+                <div className="w-5 h-5" />
               )}
             </button>
           </div>
@@ -61,26 +64,26 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <header className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-16">
+      <header className="relative min-h-[80vh] flex items-center justify-center overflow-hidden pt-20">
         <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-purple-500/10 dark:from-red-900/20 dark:to-purple-900/20" />
         
         {/* Content */}
         <div className="container mx-auto px-4 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div 
-              className="space-y-8"
+              className="space-y-6"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
             >
               <div className="space-y-4">
-                <h2 className="text-4xl md:text-6xl font-bold" style={{ fontFamily: 'Netflix Sans, Bebas Neue, sans-serif' }}>
+                <h2 className="text-3xl md:text-5xl font-bold" style={{ fontFamily: 'Netflix Sans, Bebas Neue, sans-serif' }}>
                   <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E50914] to-[#FF4D4D] animate-gradient" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>
                     ThumbCraft
                   </span>
                   <span className="text-[#E50914]">AI</span>
                 </h2>
-                <h1 className="text-4xl md:text-6xl font-bold leading-tight">
+                <h1 className="text-3xl md:text-5xl font-bold leading-tight">
                   <span className="bg-gradient-to-r from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
                     Create Stunning
                     <br />
@@ -89,25 +92,25 @@ export default function LandingPage() {
                 </h1>
               </div>
               
-              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl">
+              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl">
                 Transform your video content with AI-powered thumbnails that capture attention and drive clicks. Perfect for creators of all niches.
               </p>
 
               <div className="flex flex-wrap gap-4">
                 <motion.button 
-                  onClick={() => router.push('/generate')}
-                  className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white bg-red-600 rounded-xl overflow-hidden transition-all duration-300 hover:scale-105"
+                  onClick={() => router.push('/login')}
+                  className="group relative inline-flex items-center justify-center px-6 py-3 text-base font-bold text-white bg-red-600 rounded-xl overflow-hidden transition-all duration-300 hover:scale-105"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  Start Creating
+                  Login & Start Creating
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </motion.button>
 
                 <button 
                   onClick={() => document.getElementById('examples')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-gray-700 dark:text-white border-2 border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300"
+                  className="inline-flex items-center justify-center px-6 py-3 text-base font-semibold text-gray-700 dark:text-white border-2 border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300"
                 >
                   View Examples
                 </button>
@@ -216,10 +219,10 @@ export default function LandingPage() {
       </header>
 
       {/* Features Grid */}
-      <section className="py-20 bg-white dark:bg-black">
+      <section className="py-16 bg-white dark:bg-black">
         <div className="container mx-auto px-4">
           <motion.h2 
-            className="text-4xl font-bold text-center mb-16"
+            className="text-3xl font-bold text-center mb-12"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -229,7 +232,7 @@ export default function LandingPage() {
             </span>
           </motion.h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
                 icon: <ImageIcon className="w-8 h-8" />,
@@ -254,17 +257,17 @@ export default function LandingPage() {
             ].map((feature, i) => (
               <motion.div
                 key={i}
-                className="p-8 rounded-2xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 hover:border-red-500/50 dark:hover:border-red-500/50 transition-all duration-300"
+                className="p-6 rounded-2xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 hover:border-red-500/50 dark:hover:border-red-500/50 transition-all duration-300"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
               >
-                <div className="w-14 h-14 rounded-xl bg-red-500/10 dark:bg-red-500/20 flex items-center justify-center mb-6 text-red-600">
+                <div className="w-12 h-12 rounded-xl bg-red-500/10 dark:bg-red-500/20 flex items-center justify-center mb-4 text-red-600">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">{feature.title}</h3>
-                <p className="text-gray-600 dark:text-gray-400">{feature.description}</p>
+                <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">{feature.title}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{feature.description}</p>
               </motion.div>
             ))}
           </div>
@@ -272,10 +275,10 @@ export default function LandingPage() {
       </section>
 
       {/* Example Thumbnails */}
-      <section id="examples" className="py-20 bg-gray-50 dark:bg-gray-900">
+      <section id="examples" className="py-16 bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <motion.h2 
-            className="text-4xl font-bold text-center mb-16"
+            className="text-3xl font-bold text-center mb-12"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -291,38 +294,68 @@ export default function LandingPage() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
           >
-            <Slider
-              className="max-w-7xl mx-auto"
-              dots={true}
-              infinite={true}
-              speed={500}
-              slidesToShow={3}
-              slidesToScroll={1}
-              centerMode={true}
-              centerPadding="0px"
-              autoplay={true}
-              autoplaySpeed={3000}
-              pauseOnHover={true}
-              responsive={[
-                {
-                  breakpoint: 1024,
-                  settings: {
-                    slidesToShow: 2,
-                    centerMode: false
+            {typeof window !== 'undefined' ? (
+              <Slider
+                className="max-w-7xl mx-auto"
+                dots={true}
+                infinite={true}
+                speed={500}
+                slidesToShow={3}
+                slidesToScroll={1}
+                centerMode={true}
+                centerPadding="0px"
+                autoplay={true}
+                autoplaySpeed={3000}
+                pauseOnHover={true}
+                responsive={[
+                  {
+                    breakpoint: 1024,
+                    settings: {
+                      slidesToShow: 2,
+                      centerMode: false
+                    }
+                  },
+                  {
+                    breakpoint: 640,
+                    settings: {
+                      slidesToShow: 1,
+                      centerMode: false
+                    }
                   }
-                },
-                {
-                  breakpoint: 640,
-                  settings: {
-                    slidesToShow: 1,
-                    centerMode: false
-                  }
-                }
-              ]}
-            >
-              {exampleThumbnails.map((thumb, i) => (
-                <div key={i} className="px-2">
+                ]}
+              >
+                {exampleThumbnails.map((thumb, i) => (
+                  <div key={i} className="px-2">
+                    <motion.div
+                      className="thumbnail-card hover-lift"
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: i * 0.1 }}
+                    >
+                      <div className="relative aspect-[16/9] w-full">
+                        <Image
+                          src={thumb.src}
+                          alt={thumb.title}
+                          fill
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <div className="thumbnail-overlay">
+                          <div className="space-y-2">
+                            <p className="text-red-400 text-sm font-medium">{thumb.category}</p>
+                            <h3 className="text-white text-xl font-bold">{thumb.title}</h3>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </div>
+                ))}
+              </Slider>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+                {exampleThumbnails.map((thumb, i) => (
                   <motion.div
+                    key={i}
                     className="thumbnail-card hover-lift"
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -344,42 +377,42 @@ export default function LandingPage() {
                       </div>
                     </div>
                   </motion.div>
-                </div>
-              ))}
-            </Slider>
+                ))}
+              </div>
+            )}
           </motion.div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="relative py-24 overflow-hidden">
+      <section className="relative py-16 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-red-600/20 to-purple-800/30 dark:from-red-900/30 dark:to-purple-900/40" />
         <div className="container relative mx-auto px-4">
           <motion.div
-            className="max-w-4xl mx-auto text-center space-y-10"
+            className="max-w-4xl mx-auto text-center space-y-8"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-red-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+            <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-red-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
               Elevate Your YouTube Content
             </h2>
-            <p className="text-2xl text-gray-700 dark:text-gray-300 leading-relaxed">
+            <p className="text-xl text-gray-700 dark:text-gray-300 leading-relaxed">
               Join the community of successful creators who use AI to create 
               <span className="text-red-600 dark:text-red-500 font-semibold"> stunning thumbnails </span>
               that drive engagement.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <motion.button
-                onClick={() => router.push('/generate')}
-                className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-red-600 to-purple-600 rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 shadow-xl hover:shadow-2xl"
+                onClick={() => router.push('/login')}
+                className="group relative inline-flex items-center justify-center px-6 py-3 text-base font-bold text-white bg-gradient-to-r from-red-600 to-purple-600 rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 shadow-xl hover:shadow-2xl"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                Start Creating Now
+                Login & Start Creating Now
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </motion.button>
-              <span className="text-gray-500 dark:text-gray-400">No credit card required</span>
+              <span className="text-gray-500 dark:text-gray-400 text-sm">No credit card required</span>
             </div>
           </motion.div>
         </div>
@@ -387,9 +420,9 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="bg-white dark:bg-black border-t border-gray-200 dark:border-gray-800">
-        <div className="container mx-auto px-4 py-12">
-          <div className="flex flex-col items-center justify-center space-y-6">
-            <h3 className="text-3xl font-black tracking-tight">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <h3 className="text-2xl font-black tracking-tight">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E50914] to-[#FF4D4D] animate-gradient">
                 ThumbCraft
               </span>
@@ -405,7 +438,7 @@ export default function LandingPage() {
                 rel="noopener noreferrer"
                 className="text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-500 transition-colors"
               >
-                <Github className="w-6 h-6" />
+                <Github className="w-5 h-5" />
               </a>
               <a
                 href="https://www.linkedin.com/in/gupta-shiwang-7308"
@@ -413,7 +446,7 @@ export default function LandingPage() {
                 rel="noopener noreferrer"
                 className="text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-500 transition-colors"
               >
-                <Linkedin className="w-6 h-6" />
+                <Linkedin className="w-5 h-5" />
               </a>
               <a
                 href="https://x.com/shiwang7308"
@@ -421,7 +454,7 @@ export default function LandingPage() {
                 rel="noopener noreferrer"
                 className="text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-500 transition-colors"
               >
-                <Twitter className="w-6 h-6" />
+                <Twitter className="w-5 h-5" />
               </a>
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">

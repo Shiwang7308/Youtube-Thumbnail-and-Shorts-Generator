@@ -5,6 +5,29 @@ import archiver from 'archiver';
 import mime from 'mime';
 import sharp from 'sharp';
 
+// Helper function to verify authentication
+function isAuthenticated(request: NextRequest): boolean {
+  const authToken = request.cookies.get('auth-token')?.value;
+  
+  if (!authToken) {
+    return false;
+  }
+
+  try {
+    // Decode the simple token
+    const decoded = Buffer.from(authToken, 'base64').toString();
+    const [email, timestamp] = decoded.split(':');
+    
+    // Check if it's the demo email from environment and token is not too old (7 days)
+    const isValidEmail = email === process.env.DEMO_EMAIL;
+    const isNotExpired = Date.now() - parseInt(timestamp) < 7 * 24 * 60 * 60 * 1000;
+    
+    return isValidEmail && isNotExpired;
+  } catch {
+    return false;
+  }
+}
+
 // Initialize AI clients
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -356,6 +379,15 @@ async function getEnhancedPrompts(topic: string, style: string, placement: strin
 // Main API route handler
 export async function POST(req: NextRequest) {
   console.log('Received generate request');
+  
+  // Check authentication first
+  if (!isAuthenticated(req)) {
+    return NextResponse.json(
+      { error: 'Unauthorized access. Please login with demo credentials.' },
+      { status: 401 }
+    );
+  }
+  
   try {
     const formData = await req.formData();
     const image = formData.get('image') as File | null;

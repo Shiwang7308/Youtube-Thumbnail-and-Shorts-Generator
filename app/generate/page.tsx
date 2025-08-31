@@ -13,6 +13,8 @@ export default function HomePage() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
   const [generatedImages, setGeneratedImages] = React.useState<GeneratedImages>({
     horizontal: [],
     vertical: [],
@@ -20,6 +22,34 @@ export default function HomePage() {
   });
 
   const resultsRef = React.useRef<HTMLDivElement>(null);
+
+  // Authentication check
+  React.useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'GET',
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          setIsAuthenticated(true);
+        } else {
+          // Redirect to login if not authenticated
+          window.location.href = '/login';
+          return;
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        window.location.href = '/login';
+        return;
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   // Theme handling
   React.useEffect(() => {
@@ -32,6 +62,23 @@ export default function HomePage() {
       resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [generatedImages]);
+
+  // Show loading screen while checking authentication
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-[#0F0F0F] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#E50914] mx-auto"></div>
+          <p className="text-gray-600 dark:text-gray-400">Verifying access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render the page if not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
 
   const handleSubmit = async (formData: ThumbnailFormData) => {
     setLoading(true);
@@ -142,19 +189,37 @@ export default function HomePage() {
               <Info className="w-5 h-5" />
             </button>
           </div>
-          <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-[#272727] transition-all duration-200"
-            aria-label="Toggle theme"
-          >
-            {mounted ? (
-              theme === 'dark' ? (
-                <Sun className="w-5 h-5 text-gray-900 dark:text-white" />
-              ) : (
-                <Moon className="w-5 h-5 text-gray-900 dark:text-white" />
-              )
-            ) : null}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-[#272727] transition-all duration-200"
+              aria-label="Toggle theme"
+            >
+              {mounted ? (
+                theme === 'dark' ? (
+                  <Sun className="w-5 h-5 text-gray-900 dark:text-white" />
+                ) : (
+                  <Moon className="w-5 h-5 text-gray-900 dark:text-white" />
+                )
+              ) : null}
+            </button>
+            <button
+              onClick={async () => {
+                try {
+                  await fetch('/api/auth/logout', { method: 'POST' });
+                  localStorage.removeItem('isAuthenticated');
+                  localStorage.removeItem('userEmail');
+                  toast.success('Logged out successfully');
+                  window.location.href = '/';
+                } catch (error) {
+                  toast.error('Failed to logout');
+                }
+              }}
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </header>
 
