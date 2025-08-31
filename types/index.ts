@@ -4,9 +4,9 @@ export interface ThumbnailFormData {
   placement: 'left' | 'center' | 'right';
   imageFile: File | null;
   sampleImage: string;
-  tone: 'professional' | 'casual' | 'energetic' | 'dramatic' | 'playful' | 'mysterious' | 'inspirational' | 'luxurious' | 'educational' | 'authentic';
   variants: number;
   channelStyle?: string;
+  thumbnailText?: string; // Optional specific text for thumbnail
 }
 
 export interface GeneratedImages {

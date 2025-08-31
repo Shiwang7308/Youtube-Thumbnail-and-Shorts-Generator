@@ -23,9 +23,9 @@ const genAI = new GoogleGenAI({ apiKey: GOOGLE_API_KEY });
 
 // Helper functions
 async function preProcessImage(buffer: Buffer, aspectRatio: "16:9" | "9:16"): Promise<Buffer> {
-  // Calculate target dimensions based on aspect ratio
+  // Calculate target dimensions based on aspect ratio (reduced for faster processing)
   let width: number, height: number;
-  const MAX_DIMENSION = 1024;
+  const MAX_DIMENSION = 768; // Reduced from 1024 for 33% faster processing
 
   if (aspectRatio === "16:9") {
     width = MAX_DIMENSION;
@@ -42,7 +42,7 @@ async function preProcessImage(buffer: Buffer, aspectRatio: "16:9" | "9:16"): Pr
       fit: 'cover',
       position: 'attention' // Focus on the important part of the image
     })
-    .jpeg({ quality: 95, mozjpeg: true })
+    .jpeg({ quality: 90, mozjpeg: true }) // Balanced quality for accuracy
     .toBuffer();
 }
 
@@ -70,47 +70,66 @@ async function postProcessImage(buffer: Buffer, aspectRatio: "16:9" | "9:16"): P
     .toBuffer();
 }
 
+async function generateThumbnailText(videoDescription: string, style: string): Promise<string> {
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      {
+        role: "system",
+        content: `You are a YouTube thumbnail text expert. Create punchy, clickable thumbnail text that:
+        1. Is 1-4 words maximum (CRITICAL - never exceed this)
+        2. Uses ALL CAPS for maximum impact
+        3. Creates curiosity and urgency
+        4. Matches successful YouTube thumbnails
+        5. Is highly readable even at small sizes
+        
+        Examples of GOOD thumbnail text:
+        - "INSANE TRICK"
+        - "YOU'RE WRONG"
+        - "SHOCKING"
+        - "MUST WATCH"
+        - "NEW UPDATE"
+        - "GAME OVER"
+        
+        NEVER use full sentences or long descriptions.`
+      },
+      {
+        role: "user",
+        content: `Create catchy thumbnail text for: "${videoDescription}"
+        Style: ${style}
+        
+        Return ONLY the thumbnail text (1-4 words, ALL CAPS).`
+      }
+    ],
+    temperature: 0.9, // High creativity for catchy text
+    max_tokens: 20    // Very short response
+  });
+
+  return response.choices[0]?.message?.content?.trim() || 'WATCH NOW';
+}
+
 async function getCreativeDirection(topic: string, style: string): Promise<string> {
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
       {
         role: "system",
-        content: `You are a professional thumbnail designer for top YouTube creators. Provide specific, actionable creative direction focusing on:
+        content: `Professional thumbnail designer. Provide concise creative direction focusing on:
+        1. Lighting (3-point setup, angles, intensity)
+        2. Background (style, depth, elements)
+        3. Colors (palette, temperature)
+        4. Typography (size, positioning)
+        5. Composition (rule of thirds, focus)
 
-        REALISM PRIORITIES:
-        1. Authentic lighting setups (3-point lighting, natural window light, etc.)
-        2. Realistic background environments that enhance credibility
-        3. Professional color grading techniques
-        4. Depth and dimension through layering
-        5. Typography that matches successful YouTube channels
-
-        TECHNICAL FOCUS:
-        - Specify exact lighting angles and intensities
-        - Detail background elements and textures
-        - Define color palettes with hex codes when relevant
-        - Suggest realistic shadow placements
-        - Recommend composition techniques used by top creators
-
-        FORBIDDEN: Any suggestions for facial modifications, beauty enhancements, or unrealistic effects.`
+        Keep it photorealistic. NO facial modifications.`
       },
       {
         role: "user",
-        content: `Create detailed creative direction for: "${topic}"
-        Style: ${style}
-        
-        Provide specific guidance on:
-        1. Lighting setup (direction, intensity, color temperature)
-        2. Background design (textures, elements, depth)
-        3. Color palette (primary, secondary, accent colors)
-        4. Typography treatment (size, positioning, effects)
-        5. Compositional elements that drive engagement
-        
-        Focus on photorealistic, professional results that look like they were shot in a real studio.`
+        content: `Topic: "${topic}", Style: ${style}. Provide specific lighting, background, colors, typography, and composition guidance for professional results.`
       }
     ],
-    temperature: 0.7, // Balanced for speed and quality
-    max_tokens: 200   // Reduced for faster response   
+    temperature: 0.8, // Increased for faster generation
+    max_tokens: 150   // Reduced by 25% for speed
   });
 
   return response.choices[0]?.message?.content || '';
@@ -122,22 +141,26 @@ async function generateWithGemini(
   imageBase64: string,
   aspectRatio: "16:9" | "9:16",
   topic: string,
-  style: string
+  style: string,
+  thumbnailText?: string // Optional custom thumbnail text
 ): Promise<string[]> {
   try {
-    // Optimized configuration balancing realism with speed
+    // Optimized configuration balancing speed with accuracy
     const config = {
-      temperature: 0.6, // Balanced for quality and speed
-      topP: 0.8, // Optimal balance for diverse but focused outputs
-      topK: 10, // Good balance between quality and speed
-      maxOutputTokens: 2048,
+      temperature: 0.7, // Balanced for quality and speed
+      topP: 0.85, // Good balance for focused but creative outputs
+      topK: 10, // Restored for better quality
+      maxOutputTokens: 1800, // Increased slightly for better accuracy
       candidateCount: 1,
       responseModalities: ['IMAGE', 'TEXT']
     };
 
     // Get creative direction from GPT-4
     const creativeDirection = await getCreativeDirection(topic, style);
-    console.log('Creative direction generated');
+    
+    // Generate or use provided thumbnail text
+    const finalThumbnailText = thumbnailText || await generateThumbnailText(topic, style);
+    console.log('Creative direction generated, thumbnail text:', finalThumbnailText);
 
     // Add aspect ratio specific instructions
       const aspectRatioInstructions = aspectRatio === "16:9"
@@ -165,41 +188,37 @@ async function generateWithGemini(
            - NO elements should extend beyond the vertical frame
            - Text should be positioned in the middle third
            - Subject must be fully visible and properly scaled to fit 9:16
-           - Background should extend full height without stretching`;    // Enhanced prompt structure based on testing
+           - Background should extend full height without stretching`;    // Enhanced prompt structure optimized for speed and quality
     const fullPrompt = `
       PROFESSIONAL THUMBNAIL GENERATION:
 
-      **FACIAL PRESERVATION (CRITICAL):**
+      **CRITICAL FACIAL PRESERVATION:**
       - Use person's face EXACTLY as provided - zero modifications
-      - Preserve natural skin, expressions, and all facial features
       - Only enhance lighting and background, never the face
 
       **SPECIFICATIONS:**
       - Format: ${aspectRatio === "16:9" ? "1920x1080 YouTube Video" : "1080x1920 YouTube Shorts"}
-      - Text: "${topic}" (exact wording, high readability)
+      - Text: "${finalThumbnailText}" (exact wording, bold and prominent)
+      - Video Context: "${topic}" (for styling context only, NOT for text)
       - Style: ${style}
-      - Quality: Professional, broadcast-ready
 
       **COMPOSITION:**
       ${aspectRatioInstructions}
 
       **ENHANCEMENT FOCUS:**
-      - Professional lighting setup around subject
-      - Engaging background that complements subject
-      - Bold, readable typography with proper contrast
-      - YouTube-optimized colors for engagement
+      - Professional lighting around subject
+      - Engaging background
+      - Bold, readable typography
+      - YouTube-optimized colors
 
       **CREATIVE DIRECTION:**
       ${creativeDirection}
 
-      **FORBIDDEN:**
-      - Face modifications, beauty filters, or enhancements
-      - Poor quality, blurry, or pixelated elements
-      - Illegible text or cut-off elements
+      **FORBIDDEN:** Face modifications, poor quality elements
     `;
     
     const images: string[] = [];
-    const maxRetries = 3;
+    const maxRetries = 2; // Reduced from 3 for faster failure handling
     let retryCount = 0;
     let success = false;
 
@@ -251,8 +270,8 @@ async function generateWithGemini(
           throw new Error(`Failed to generate image after ${maxRetries} attempts: ${error}`);
         }
         
-        // Exponential backoff
-        await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
+        // Reduced exponential backoff delay for faster retry
+        await new Promise(resolve => setTimeout(resolve, Math.pow(1.5, retryCount) * 800));
       }
     }
 
@@ -275,96 +294,43 @@ async function getEnhancedPrompts(topic: string, style: string, placement: strin
         model: "gpt-4o-mini",
         messages: [{
           role: "system",
-          content: `You are a YouTube thumbnail specialist creating photorealistic thumbnail prompts. Focus on:
+          content: `YouTube thumbnail specialist creating photorealistic prompts. Focus on:
+          - Professional studio lighting (key, fill, rim positions)
+          - Authentic backgrounds (materials, textures, depth)
+          - Commercial color grading
+          - Natural shadows and perspective
+          - Typography matching successful channels
           
-          REALISM PRIORITIES:
-          - Professional studio lighting setups with specific technical details
-          - Authentic background environments with realistic textures and materials
-          - Commercial-grade color grading techniques
-          - Natural depth of field and shadow placement
-          - Typography treatments matching successful YouTube channels
-          
-          TECHNICAL SPECIFICATIONS:
-          - Lighting: Specify angles (key light, fill light, rim light positions)
-          - Backgrounds: Detail materials (brushed metal, wood grain, tech setups, etc.)
-          - Colors: Professional color temperature and grading techniques
-          - Shadows: Natural shadow direction and intensity
-          - Perspective: Professional camera angles and composition
-          
-          STRICT RULE: Never suggest facial modifications or artificial enhancements.
-          The person must appear completely natural and authentic.`
+          NEVER suggest facial modifications. Keep people completely natural.`
         }, {
           role: "user",
-          content: `Create a photorealistic thumbnail concept for:
-            Description: ${topic}
-            Style: ${style}
-            Person placement: ${placement}
-            
-            Provide detailed technical specifications:
-            1. Studio lighting setup (key light at 45°, fill light intensity, rim lighting)
-            2. Background environment (specific materials, textures, depth layers)
-            3. Professional color grading (temperature, saturation, contrast levels)
-            4. Typography design (font weight, drop shadows, positioning)
-            5. Composition techniques for maximum viewer engagement
-            
-            Result should look like a professional photography studio shoot.`
+          content: `Photorealistic thumbnail for: ${topic}, Style: ${style}, Placement: ${placement}. 
+          Specify: lighting setup, background environment, color grading, typography, composition techniques.`
         }],
-        temperature: 0.8, // Higher for faster, more creative responses
-        max_tokens: 300   // Reduced for speed
+        temperature: 0.9, // Increased for faster generation
+        max_tokens: 200   // Reduced for speed
       });
       
       return [response.choices[0].message.content || ''];
     }
 
-    // For multiple variants, generate distinct concepts
+    // For multiple variants, generate distinct concepts with streamlined prompt
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [{
         role: "system",
-        content: `You are a YouTube thumbnail expert creating ${variants} photorealistic design concepts.
-        
-        REALISM STANDARDS:
-        - Each variant must look like professional studio photography
-        - Preserve facial authenticity with zero artificial modifications
-        - Create variety through technical lighting and environmental changes
-        - Maintain broadcast-quality visual standards
-        
-        TECHNICAL VARIATION APPROACHES:
-        1. Lighting Setups: Different professional lighting configurations
-           - Variant 1: Dramatic key lighting with strong shadows
-           - Variant 2: Soft box lighting with even illumination
-           
-        2. Background Environments: Distinct realistic settings
-           - Modern studio setup vs. natural environment vs. tech workspace
-           
-        3. Color Grading: Professional post-production techniques
-           - Warm vs. cool color temperatures
-           - High contrast vs. natural saturation
-           
-        4. Composition Styles: Different professional framing approaches
-           - Close-up portrait vs. wider environmental shot
-           
-        FORBIDDEN: Facial modifications, beauty filters, unrealistic enhancements.`
+        content: `Create ${variants} photorealistic thumbnail concepts with variety through lighting and backgrounds. 
+        Each variant needs different: lighting setup, background style, text positioning, color scheme.
+        Preserve facial authenticity - zero modifications.`
       }, {
         role: "user",
-        content: `Create ${variants} photorealistic thumbnail concepts for:
-          Description: ${topic}
-          Style: ${style}
-          Person placement: ${placement}
-          
-          Each variant needs:
-          - Unique background approach
-          - Different lighting environment 
-          - Varied text positioning
-          - Distinct color scheme
-          - Natural, unmodified person appearance
-          
-          Format: concept1 |||VARIANT||| concept2 ${variants > 2 ? '|||VARIANT||| concept3' : ''}`
+        content: `${variants} concepts for: ${topic}, Style: ${style}, Placement: ${placement}
+        Format: concept1 |||VARIANT||| concept2 ${variants > 2 ? '|||VARIANT||| concept3' : ''}`
       }],
-      temperature: 0.9, // High creativity for diverse variants
-      max_tokens: 800,  // Reduced for faster processing
-      presence_penalty: 0.6, // Reduced for speed
-      frequency_penalty: 0.4
+      temperature: 1.0, // Maximum creativity for speed
+      max_tokens: 600,  // Reduced for faster processing
+      presence_penalty: 0.3, // Reduced for speed
+      frequency_penalty: 0.2
     });
     
     const content = response.choices[0].message.content || '';
@@ -397,9 +363,10 @@ export async function POST(req: NextRequest) {
     const style = formData.get('style') as string;
     const placement = formData.get('placement') as string;
     const variantsStr = formData.get('variants') as string | null;
+    const thumbnailText = formData.get('thumbnailText') as string | null;
     const variants = variantsStr ? parseInt(variantsStr) : 1;
 
-    console.log('Processing request with:', { topic, style, placement, variants });
+    console.log('Processing request with:', { topic, style, placement, variants, thumbnailText });
 
     if (!image || !topic || !style || !placement) {
       return NextResponse.json(
@@ -434,32 +401,41 @@ export async function POST(req: NextRequest) {
     console.log('Enhanced prompts:', prompts);
 
     try {
-      // Generate one image at a time to prevent timeouts and excessive resource usage
+      // Generate images with optimized parallel processing for speed
       const horizontalImages: string[] = [];
       const verticalImages: string[] = [];
 
-      // Process prompts sequentially
-      for (let i = 0; i < prompts.length && i < variants; i++) {
-        const prompt = prompts[i];
-        try {
-          // Generate horizontal version
-          const hResult = await generateWithGemini(prompt, base64ImageHorizontal, "16:9", topic, style);
-          horizontalImages.push(...hResult);
+      // For single variant, process both orientations in parallel
+      if (variants === 1) {
+        const [hResult, vResult] = await Promise.all([
+          generateWithGemini(prompts[0], base64ImageHorizontal, "16:9", topic, style, thumbnailText || undefined),
+          generateWithGemini(prompts[0], base64ImageVertical, "9:16", topic, style, thumbnailText || undefined)
+        ]);
+        horizontalImages.push(...hResult);
+        verticalImages.push(...vResult);
+      } else {
+        // For multiple variants, process sequentially to avoid rate limits
+        for (let i = 0; i < prompts.length && i < variants; i++) {
+          const prompt = prompts[i];
+          try {
+            // Generate horizontal version
+            const hResult = await generateWithGemini(prompt, base64ImageHorizontal, "16:9", topic, style, thumbnailText || undefined);
+            horizontalImages.push(...hResult);
 
-          // Generate vertical version
-          const vResult = await generateWithGemini(prompt, base64ImageVertical, "9:16", topic, style);
-          verticalImages.push(...vResult);
-        } catch (error) {
-          console.error(`Failed to generate variant ${i + 1}:`, error);
-          // Continue with next variant if one fails
-          continue;
+            // Generate vertical version
+            const vResult = await generateWithGemini(prompt, base64ImageVertical, "9:16", topic, style, thumbnailText || undefined);
+            verticalImages.push(...vResult);
+          } catch (error) {
+            console.error(`Failed to generate variant ${i + 1}:`, error);
+            continue;
+          }
         }
       }
 
       console.log('Generated images successfully');
 
-      // Create ZIP archive
-      const archive = archiver('zip', { zlib: { level: 9 } });
+      // Create ZIP archive with optimized compression
+      const archive = archiver('zip', { zlib: { level: 6 } }); // Reduced compression for speed
       const chunks: Buffer[] = [];
 
       archive.on('data', (chunk) => chunks.push(chunk));

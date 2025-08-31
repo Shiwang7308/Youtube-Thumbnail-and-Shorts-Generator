@@ -45,8 +45,8 @@ export default function HomePage() {
       data.append('placement', formData.placement);
       data.append('variants', formData.variants.toString());
       
-      if (formData.tone) {
-        data.append('tone', formData.tone);
+      if (formData.thumbnailText) {
+        data.append('thumbnailText', formData.thumbnailText);
       }
 
       const response = await fetch('/api/generate', {
